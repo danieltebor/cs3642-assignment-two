@@ -1,13 +1,16 @@
 #pragma once
 
-// The max number of nodes is 9! since the state is a 3x3 grid with 9 tiles.
-// Only half of these are reachable from any given starting state, 
-// so the max number of nodes is 9!/2 -> 181440.
-#define MAX_NODES 181440
-
 #include "eight_puzzle.h"
+#include "priority_queue.h"
+#include "stack.h"
+#include "queue.h"
 
-Node* depth_first_search(Node* start_node);
-Node* breadth_first_search(Node* start_node);
-Node* uniform_cost_search(Node* start_node);
-Node* a_star_search(Node* start_node);
+typedef struct {
+    Node* goal_node;
+    unsigned int num_nodes_visited;
+} SearchResult;
+
+SearchResult* depth_first_search(Node* start_node);
+SearchResult* breadth_first_search(Node* start_node);
+SearchResult* uniform_cost_search(Node* start_node);
+SearchResult* a_star_search(Node* start_node);

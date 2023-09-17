@@ -30,24 +30,10 @@ Node generate_random_start_node() {
 
     // Populate rest of node.
     node.parent = NULL;
-    node.cost = 0;
+    node.depth = 0;
+    node.heuristic = UINT_MAX;
 
     return node;
-}
-
-// Checks if two nodes are equivalent.
-bool check_states_are_equivalent(unsigned int* state1[3][3], unsigned int* state2[3][3]) {
-    // Traverse state.
-    for (unsigned int y = 0; y < 3; y++) {
-        for (unsigned int x = 0; x < 3; x++) {
-            // Check if tile is misplaced. If so return false.
-            if (state1[y][x] != state2[y][x]) {
-                return false;
-            }
-        }
-    }
-
-    return true;
 }
 
 // Calculates a heuristic value corresponding to the number 
@@ -100,4 +86,86 @@ unsigned int calc_summed_manhatten_distances(Node* node) {
             }
         }
     }
-};
+}
+
+// Checks if two nodes are equivalent.
+bool check_states_are_equivalent(unsigned int* state1[3][3], unsigned int* state2[3][3]) {
+    // Traverse state.
+    for (unsigned int y = 0; y < 3; y++) {
+        for (unsigned int x = 0; x < 3; x++) {
+            // Check if tile is misplaced. If so return false.
+            if (state1[y][x] != state2[y][x]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+// Return all possible children of a node.
+Node* extend_node(Node* node, bool should_use_misplaced_heuristic, bool should_use_manhatten_distance_heuristic) {
+    // Find blank tile.
+    unsigned int blank_x, blank_y;
+
+    for (blank_y = 0; blank_y < 3; blank_y++) {
+        for (blank_x = 0; blank_y < 3; blank_y++) {
+            if (node->state[blank_y][blank_x] == 0) {
+                break;
+            }
+        }
+    }
+
+    // Generate child nodes starting from up and going clockwise.
+    Node* child_nodes[4];
+    unsigned int child_node_idx = 0;
+
+    for (unsigned int i = 0; i < 4; i++) {
+        Node child_node;
+        // Copy state into child_node's state.
+        memcpy(child_node.state, node->state, sizeof(node->state));
+        
+        if (i == 0 && blank_y > 0) {
+            // Swap blank tile with tile above it.
+            unsigned int above_tile = child_node.state[blank_y - 1][blank_x];
+            child_node.state[blank_y - 1][blank_x] = 0;
+            child_node.state[blank_y][blank_x] = above_tile;
+        }
+        else if (i == 1 && blank_x < 2) {
+            // Swap blank tile with tile to the right of it.
+            unsigned int right_tile = child_node.state[blank_y][blank_x + 1];
+            child_node.state[blank_y][blank_x + 1] = 0;
+            child_node.state[blank_y][blank_x] = right_tile;
+        }
+        else if (i == 2 && blank_y < 2) {
+            // Swap blank tile with tile below it.
+            unsigned int below_tile = child_node.state[blank_y + 1][blank_x];
+            child_node.state[blank_y + 1][blank_x] = 0;
+            child_node.state[blank_y][blank_x] = below_tile;
+        }
+        else if (i == 3 && blank_x > 0) {
+            // Swap blank tile with tile to the left of it.
+            unsigned int left_tile = child_node.state[blank_y][blank_x - 1];
+            child_node.state[blank_y][blank_x - 1] = 0;
+            child_node.state[blank_y][blank_x] = left_tile;
+        }
+
+        // Populate blank fields in child_node.
+        child_node.parent = node;
+        child_node.depth = node->depth + 1;
+        child_node.heuristic = 0;
+        if (should_use_misplaced_heuristic) {
+            child_node.heuristic += calc_num_tiles_misplaced(&child_node);
+        }
+        if (should_use_manhatten_distance_heuristic) {
+            child_node.heuristic += calc_summed_manhatten_distances(&child_node);
+        }
+
+        // Add child_node to child_nodes if it's state does not match the node's parent's state.
+        if (node->parent == NULL || !check_states_are_equivalent(child_node.state, node->parent->state)) {
+            child_nodes[child_node_idx++] = &child_node;
+        }
+    }
+
+    return child_nodes;
+}
