@@ -6,6 +6,7 @@ from eight_puzzle_binding import LIB, Node
 # Wrapper function for SearchResult struct
 class SearchResult(ctypes.Structure):
     _fields_ = [('trace', ctypes.POINTER(ctypes.POINTER(Node))),
+                ('trace_size', ctypes.c_uint),
                 ('num_nodes_visited', ctypes.c_uint)]
 
 # Set up function argument types for the backend LIBrary.

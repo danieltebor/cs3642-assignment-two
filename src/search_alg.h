@@ -7,6 +7,7 @@
 
 typedef struct {
     Node** trace;
+    unsigned int trace_size;
     unsigned int num_nodes_visited;
 } SearchResult;
 

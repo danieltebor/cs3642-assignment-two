@@ -2,7 +2,7 @@ import ctypes
 
 
 # Load the backend LIBrary.
-LIB = ctypes.CDLL('../lib/libcs3642-assignment-two.so')
+LIB = ctypes.CDLL('./lib/libcs3642-assignment-two.so')
 
 # Wrapper python class for Node struct
 class Node(ctypes.Structure):
@@ -13,8 +13,8 @@ Node._fields_ = [('parent', ctypes.POINTER(Node)),
                  ('depth', ctypes.c_uint),
                  ('heuristic', ctypes.c_uint)]
 
-LIB.generate_random_start_node.restype = Node
+LIB.generate_random_start_node.restype = ctypes.POINTER(Node)
 
 # Wrapper function for generate_random_start_node()
-def generate_random_start_node() -> Node:
+def generate_random_start_node() -> ctypes.POINTER(Node):
     return LIB.generate_random_start_node()

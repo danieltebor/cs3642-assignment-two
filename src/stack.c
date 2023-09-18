@@ -19,6 +19,14 @@ Node* pop(Stack* stack) {
     return top_node;
 }
 
+// Empty stack.
+void empty(Stack* stack) {
+    for (unsigned int i = 0; i < MAX_NODES; i++) {
+        stack->nodes[i] = NULL;
+    }
+    stack->top_idx = -1;
+}
+
 // Check if stack is empty.
 bool s_is_empty(Stack* stack) {
     return stack->top_idx == -1;

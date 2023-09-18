@@ -1,45 +1,71 @@
 #include "eight_puzzle.h"
 
 // Goal state.
-unsigned int goal_state[3][3] = {
+const unsigned int goal_state[3][3] = {
     {1, 2, 3},
     {8, 0, 4},
     {7, 6, 5}
 };
 
 // Generate a node with a random starting state.
-Node generate_random_start_node() {
-    Node node;
+Node* generate_random_start_node() {
+    Node* node = (Node*) malloc(sizeof(Node));
     
-    // Generate a random starting state.
-    unsigned int tiles[9] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-    bool used[9] = {false};
+    // Copy goal state into node.
+    unsigned int blank_x, blank_y;
+    for (int y = 0; y < 3; y++) {
+        for (int x = 0; x < 3; x++) {
+            node->state[y][x] = goal_state[y][x];
+            if (node->state[y][x] == 0) {
+                blank_x = x;
+                blank_y = y;
+            }
+        }
+    }
     srand(time(NULL));
 
-    // Traverse state.
-    for (unsigned int y = 0; y < 3; y++) {
-        for (unsigned int x = 0; x < 3; x++) {
-            // Randomly select a tile from tiles for the current
-            // State coordinate. Ensure that the tile is not already
-            // in use.
-            bool tile_placement_is_valid = false;
+    // Randomly scramble the state. This garuntees the state can be solved.
+    for (unsigned int i = 0; i < 10000; i++) {
+        // Generate a random move.
+        unsigned int move = rand() % 4;
 
-            while (!tile_placement_is_valid) {
-                unsigned const int RANDOM_INDEX = rand() % 9;
-
-                if (!used[RANDOM_INDEX]) {
-                    node.state[y][x] = tiles[RANDOM_INDEX];
-                    used[RANDOM_INDEX] = true;
-                    tile_placement_is_valid = true;
-                }
-            }
+        if (move == 0 && blank_x > 0) {
+            // Swap blank tile with tile to the left of it.
+            unsigned int left_tile = node->state[blank_y][blank_x - 1];
+            node->state[blank_y][blank_x - 1] = 0;
+            node->state[blank_y][blank_x] = left_tile;
+            blank_x--;
+        }
+        else if (move == 1 && blank_y < 2) {
+            // Swap blank tile with tile below it.
+            unsigned int below_tile = node->state[blank_y + 1][blank_x];
+            node->state[blank_y + 1][blank_x] = 0;
+            node->state[blank_y][blank_x] = below_tile;
+            blank_y++;
+        }
+        else if (move == 2 && blank_x < 2) {
+            // Swap blank tile with tile to the right of it.
+            unsigned int right_tile = node->state[blank_y][blank_x + 1];
+            node->state[blank_y][blank_x + 1] = 0;
+            node->state[blank_y][blank_x] = right_tile;
+            blank_x++;
+        }
+        else if (move == 3 && blank_y > 0) {
+            // Swap blank tile with tile above it.
+            unsigned int above_tile = node->state[blank_y - 1][blank_x];
+            node->state[blank_y - 1][blank_x] = 0;
+            node->state[blank_y][blank_x] = above_tile;
+            blank_y--;
+        }
+        else {
+            i--;
         }
     }
 
     // Populate rest of node.
-    node.parent = NULL;
-    node.depth = 0;
-    node.heuristic = UINT_MAX;
+    node->parent = NULL;
+    node->depth = 0;
+    node->heuristic = UINT_MAX;
 
     return node;
 }
@@ -100,7 +126,7 @@ unsigned int calc_summed_manhatten_distances(Node* node) {
 }
 
 // Checks if two nodes are equivalent.
-bool check_states_are_equivalent(unsigned int state1[3][3], unsigned int state2[3][3]) {
+bool check_states_are_equivalent(const unsigned int state1[3][3], const unsigned int state2[3][3]) {
     // Traverse state.
     for (unsigned int y = 0; y < 3; y++) {
         for (unsigned int x = 0; x < 3; x++) {
@@ -114,24 +140,25 @@ bool check_states_are_equivalent(unsigned int state1[3][3], unsigned int state2[
 }
 
 // Trace back to root checking for any duplicate states.
-bool state_is_repeat(Node* node, unsigned int state[3][3]) {
-    // Trace back to root.
-    Node* current_node = node;
-    while (current_node != NULL) {
-        // Check if state is equivalent to node's state.
-        if (check_states_are_equivalent(current_node->state, state)) {
+bool state_is_repeat(unsigned int state[3][3],
+                     const Node** nodes_visited,
+                     unsigned int num_nodes_visited) {
+    // Iterate through nodes_visited starting from the end.
+    // Starting from the end is ideal because one of the child nodes
+    // Will always have the same state as the parent node of the node being extended.
+    for (int i = num_nodes_visited - 1; i >= 0; i--) {
+        if (check_states_are_equivalent(state, nodes_visited[i]->state)) {
             return true;
         }
-
-        // Move to parent node.
-        current_node = current_node->parent;
     }
 
     return false;
 }
 
 // Return all possible children of a node.
-Node** extend_node(Node* node,
+Node** extend_node(const Node* node,
+                   const Node** nodes_visited,
+                   unsigned int num_nodes_visited,
                    bool should_use_misplaced_heuristic,
                    bool should_use_manhatten_distance_heuristic) {
     // Find blank tile.
@@ -164,29 +191,29 @@ Node** extend_node(Node* node,
         // Copy state into child_node's state.
         memcpy(child_node->state, node->state, sizeof(node->state));
         
-        if (i == 0 && blank_y > 0) {
-            // Swap blank tile with tile above it.
-            unsigned int above_tile = child_node->state[blank_y - 1][blank_x];
-            child_node->state[blank_y - 1][blank_x] = 0;
-            child_node->state[blank_y][blank_x] = above_tile;
+        if (i == 0 && blank_x > 0) {
+            // Swap blank tile with tile to the left of it.
+            unsigned int left_tile = child_node->state[blank_y][blank_x - 1];
+            child_node->state[blank_y][blank_x - 1] = 0;
+            child_node->state[blank_y][blank_x] = left_tile;
         }
-        else if (i == 1 && blank_x < 2) {
-            // Swap blank tile with tile to the right of it.
-            unsigned int right_tile = child_node->state[blank_y][blank_x + 1];
-            child_node->state[blank_y][blank_x + 1] = 0;
-            child_node->state[blank_y][blank_x] = right_tile;
-        }
-        else if (i == 2 && blank_y < 2) {
+        else if (i == 1 && blank_y < 2) {
             // Swap blank tile with tile below it.
             unsigned int below_tile = child_node->state[blank_y + 1][blank_x];
             child_node->state[blank_y + 1][blank_x] = 0;
             child_node->state[blank_y][blank_x] = below_tile;
         }
-        else if (i == 3 && blank_x > 0) {
-            // Swap blank tile with tile to the left of it.
-            unsigned int left_tile = child_node->state[blank_y][blank_x - 1];
-            child_node->state[blank_y][blank_x - 1] = 0;
-            child_node->state[blank_y][blank_x] = left_tile;
+        else if (i == 2 && blank_x < 2) {
+            // Swap blank tile with tile to the right of it.
+            unsigned int right_tile = child_node->state[blank_y][blank_x + 1];
+            child_node->state[blank_y][blank_x + 1] = 0;
+            child_node->state[blank_y][blank_x] = right_tile;
+        }
+        else if (i == 3 && blank_y > 0) {
+            // Swap blank tile with tile above it.
+            unsigned int above_tile = child_node->state[blank_y - 1][blank_x];
+            child_node->state[blank_y - 1][blank_x] = 0;
+            child_node->state[blank_y][blank_x] = above_tile;
         }
         else {
             // Free child_node if it is not a valid child.
@@ -206,7 +233,7 @@ Node** extend_node(Node* node,
         }
 
         // Add child_node to child_nodes if it's state does not already exist.
-        if (!state_is_repeat(node, child_node->state)) {
+        if (!state_is_repeat(child_node->state, nodes_visited, num_nodes_visited)) {
             child_nodes[child_node_idx++] = child_node;
         } else {
             // Free child_node if it is a repeat.

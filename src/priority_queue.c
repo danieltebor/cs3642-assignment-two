@@ -9,21 +9,26 @@ void init_priority_queue(PriorityQueue* queue) {
 // The node is inserted in the correct position based on its depth + heuristic.
 // Lower is better.
 void p_enqueue(PriorityQueue* queue, Node* node) {
-    queue->nodes[++queue->rear_idx] = node;
+    // If the queue is empty, insert the node at the beginning.
+    if (queue->rear_idx == 0) {
+        queue->nodes[queue->rear_idx++] = node;
+        return;
+    }
 
-    // Sort new node into correct position.
-    // Bubble sort is used. This isn't the most efficient way to do this,
-    // but using something like a heap, especially in c, is out of the scope for this assignment.
-    for (unsigned int i = queue->rear_idx; i > 0; i--) {
-        if (queue->nodes[i]->depth + queue->nodes[i]->heuristic
-            < queue->nodes[i - 1]->depth + queue->nodes[i - 1]->heuristic) {
-            Node* temp = queue->nodes[i];
-            queue->nodes[i] = queue->nodes[i - 1];
-            queue->nodes[i - 1] = temp;
+    // Find the correct position to insert the new node.
+    int i;
+    for (i = queue->rear_idx - 1; i >= 0; i--) {
+        if (node->depth + node->heuristic < queue->nodes[i]->depth + queue->nodes[i]->heuristic) {
+            // Move the existing node one position to the right.
+            queue->nodes[i + 1] = queue->nodes[i];
         } else {
             break;
         }
     }
+
+    // Insert the new node at the found position.
+    queue->nodes[i + 1] = node;
+    queue->rear_idx++;
 }
 
 // Deque a node from the priority queue.
@@ -44,7 +49,7 @@ Node* p_dequeue(PriorityQueue* queue) {
 
 // Return true if queue is emtpy.
 bool p_is_empty(PriorityQueue* queue) {
-    if (sizeof(queue->nodes) == 0) {
+    if (queue->rear_idx == 0) {
         return true;
     }
     return false;
