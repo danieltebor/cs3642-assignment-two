@@ -6,11 +6,14 @@
 #include "queue.h"
 
 typedef struct {
-    Node* goal_node;
+    Node** trace;
     unsigned int num_nodes_visited;
 } SearchResult;
 
-SearchResult* depth_first_search(Node* start_node);
-SearchResult* breadth_first_search(Node* start_node);
-SearchResult* uniform_cost_search(Node* start_node);
-SearchResult* a_star_search(Node* start_node);
+// Frees a SearchResult from memory.
+void free_search_result(SearchResult* result);
+
+void depth_first_search(Node* start_node, SearchResult* result);
+void breadth_first_search(Node* start_node, SearchResult* result);
+void uniform_cost_search(Node* start_node, SearchResult* result);
+void a_star_search(Node* start_node, SearchResult* result);

@@ -9,7 +9,7 @@ typedef struct {
 } Stack;
 
 // Construct stack.
-Stack* init_stack(Stack* stack);
+void init_stack(Stack* stack);
 
 // Push node to stack.
 void push(Stack* stack, Node* node);

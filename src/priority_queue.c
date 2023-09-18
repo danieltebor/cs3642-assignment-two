@@ -8,7 +8,7 @@ void init_priority_queue(PriorityQueue* queue) {
 // Enque a node into the priority queue.
 // The node is inserted in the correct position based on its depth + heuristic.
 // Lower is better.
-void _enqueue(PriorityQueue* queue, Node* node) {
+void p_enqueue(PriorityQueue* queue, Node* node) {
     queue->nodes[++queue->rear_idx] = node;
 
     // Sort new node into correct position.
@@ -24,16 +24,11 @@ void _enqueue(PriorityQueue* queue, Node* node) {
             break;
         }
     }
-
-    // Print queue for debugging.
-    for (unsigned int i = 0; i < queue->rear_idx; i++) {
-        printf("%d ", queue->nodes[i]->depth + queue->nodes[i]->heuristic);
-    }
 }
 
 // Deque a node from the priority queue.
 // The node with the lowest cost is returned.
-Node* _dequeue(PriorityQueue* queue) {
+Node* p_dequeue(PriorityQueue* queue) {
     Node* front = queue->nodes[0];
 
     // Shift nodes to the left.
@@ -48,7 +43,7 @@ Node* _dequeue(PriorityQueue* queue) {
 }
 
 // Return true if queue is emtpy.
-bool _is_empty(PriorityQueue* queue) {
+bool p_is_empty(PriorityQueue* queue) {
     if (sizeof(queue->nodes) == 0) {
         return true;
     }

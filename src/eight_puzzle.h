@@ -7,22 +7,23 @@
 
 #include <limits.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 // Struct to represent a node in the search tree.
-typedef struct {
+typedef struct Node Node;
+
+struct Node {
     Node* parent; // Pointer to parent node
     unsigned int state[3][3]; // Board state
     unsigned int depth; // Depth of node in search tree
     unsigned int heuristic; // Heuristic value of node
-} Node;
+};
 
 // Goal state.
-unsigned int goal_state[3][3] = {
-    {1, 2, 3},
-    {8, 0, 4},
-    {7, 6, 5}
-};
+extern unsigned int goal_state[3][3];
 
 // Generate a node with a random starting state.
 Node generate_random_start_node();
@@ -36,7 +37,7 @@ unsigned int calc_num_tiles_misplaced(Node* node);
 unsigned int calc_summed_manhatten_distances(Node* node);
 
 // Checks if two nodes are equivalent.
-bool check_states_are_equivalent(unsigned int* state1[3][3], unsigned int* state2[3][3]);
+bool check_states_are_equivalent(unsigned int state1[3][3], unsigned int state2[3][3]);
 
 // Return all possible children of a node.
-Node* extend_node(Node* node, bool should_use_misplaced_heuristic, bool should_use_manhatten_distance_heuristic);
+Node** extend_node(Node* node, bool should_use_misplaced_heuristic, bool should_use_manhatten_distance_heuristic);
