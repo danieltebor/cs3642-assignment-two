@@ -12,10 +12,15 @@ typedef struct {
 void init_queue(Queue* queue);
 
 // Enque a node into the queue.
-void q_enqueue(Queue* queue, Node* node);
+void enqueue(Queue* queue, Node* node);
+
+// Enque a node into the priority queue.
+// The node is inserted in the correct position based on its depth + heuristic.
+// Lower is better.
+void priority_enqueue(Queue* queue, Node* node);
 
 // Deque a node from the queue.
-Node* q_dequeue(Queue* queue);
+Node* dequeue(Queue* queue);
 
 // Return true if queue is empty.
-bool q_is_empty(Queue* queue);
+bool queue_is_empty(Queue* queue);

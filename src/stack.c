@@ -28,6 +28,6 @@ void empty(Stack* stack) {
 }
 
 // Check if stack is empty.
-bool s_is_empty(Stack* stack) {
+bool stack_is_empty(Stack* stack) {
     return stack->top_idx == -1;
 }

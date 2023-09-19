@@ -140,25 +140,19 @@ bool check_states_are_equivalent(const unsigned int state1[3][3], const unsigned
 }
 
 // Trace back to root checking for any duplicate states.
-bool state_is_repeat(unsigned int state[3][3],
-                     const Node** nodes_visited,
-                     unsigned int num_nodes_visited) {
-    // Iterate through nodes_visited starting from the end.
-    // Starting from the end is ideal because one of the child nodes
-    // Will always have the same state as the parent node of the node being extended.
-    for (int i = num_nodes_visited - 1; i >= 0; i--) {
-        if (check_states_are_equivalent(state, nodes_visited[i]->state)) {
-            return true;
-        }
+bool state_is_repeat(Node* node,
+                     Node** nodes_visited) {
+    // Check if Node already exists in nodes_visited.
+    if (search(node, nodes_visited) == NULL) {
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 // Return all possible children of a node.
-Node** extend_node(const Node* node,
-                   const Node** nodes_visited,
-                   unsigned int num_nodes_visited,
+Node** extend_node(Node* node,
+                   Node** nodes_visited,
                    bool should_use_misplaced_heuristic,
                    bool should_use_manhatten_distance_heuristic) {
     // Find blank tile.
@@ -233,7 +227,7 @@ Node** extend_node(const Node* node,
         }
 
         // Add child_node to child_nodes if it's state does not already exist.
-        if (!state_is_repeat(child_node->state, nodes_visited, num_nodes_visited)) {
+        if (!state_is_repeat(child_node, nodes_visited)) {
             child_nodes[child_node_idx++] = child_node;
         } else {
             // Free child_node if it is a repeat.
