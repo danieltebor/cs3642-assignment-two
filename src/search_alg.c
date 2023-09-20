@@ -1,10 +1,21 @@
 #include "search_alg.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include "hash_table.h"
+#include "stack.h"
+#include "queue.h"
+
 // Frees nodes in an array from memory.
 void free_nodes(Node** nodes, unsigned int num_nodes) {
     for (unsigned int i = 0; i < num_nodes; i++) {
         if (nodes[i] != NULL) {
             Node* current_node = nodes[i];
+            // Loop through Linked List of Node stored in each node.
+            // This is due to overlap during hashing.
             while (current_node != NULL) {
                 Node* next_node = current_node->next;
                 free(current_node);
@@ -14,24 +25,16 @@ void free_nodes(Node** nodes, unsigned int num_nodes) {
     }
 }
 
-// Frees a SearchResult from memory.
-void free_search_result(SearchResult* result) {
-    free_nodes(result->trace, result->trace_size);
-    if (result->trace != NULL) {
-        free(result->trace);
-    }
-}
-
 // Each search algorithm populates a SearchResult struct.
-void populate_search_result(SearchResult* result, Node** nodes_visited, Node* goal_node, unsigned int num_nodes_visited) {
-    printf("ran");
+void populate_search_result(SearchResult* result, Node** nodes_visited, const Node* goal_node, unsigned int num_nodes_visited, double cpu_time_taken_ms) {
     result->num_nodes_visited = num_nodes_visited;
+    result->cpu_time_taken_ms = cpu_time_taken_ms;
     result->trace_size = 0;
 
     // Check if goal reached.
     if (goal_node == NULL) {
-        // Free nodes_visited array to prevent a memory leak.
-        free_nodes(nodes_visited, num_nodes_visited);
+        // Free nodes_visited hash table to prevent a memory leak.
+        free_nodes(nodes_visited, MAX_NODES);
         return;
     }
 
@@ -42,6 +45,7 @@ void populate_search_result(SearchResult* result, Node** nodes_visited, Node* go
         ++result->trace_size;
     }
 
+    /*
     // Dynamically allocate trace array and populate from root to goal.
     // Pointers copied into trace array are set to NULL in nodes_visited to prevent deallocation.
     result->trace = (Node**) malloc(sizeof(Node*) * result->trace_size);
@@ -50,24 +54,32 @@ void populate_search_result(SearchResult* result, Node** nodes_visited, Node* go
     while (current_node != NULL) {
         // Copy node into trace array.
         // The copy is done so no issues arise when freeing nodes_visited.
-        Node* node_copy = malloc(sizeof(Node));
-        memcpy(node_copy, current_node, sizeof(Node));
+        Node* node_copy = calloc(1, sizeof(Node));
+        memcpy(node_copy->state, current_node->state, sizeof(node_copy->state));
+        node_copy->depth = current_node->depth;
+        node_copy->heuristic = current_node->heuristic;
+
         result->trace[--trace_idx] = node_copy;
+
         current_node = current_node->parent;
     }
+    */
 
     // Free nodes_visited array to prevent a memory leak.
-    free_nodes(nodes_visited, num_nodes_visited);
+    //free_nodes(nodes_visited, MAX_NODES);
 }
 
 void depth_first_search(Node* start_node, SearchResult* result) {
     Stack nodes_to_visit;
     init_stack(&nodes_to_visit);
 
-    Node** nodes_visited = malloc(MAX_NODES * 2 * sizeof(Node*));
+    Node** nodes_visited = calloc(MAX_NODES, sizeof(Node*));
     unsigned int num_nodes_visited = 0;
     
     Node* goal_node;
+
+    // Record start time for algorithm execution.
+    clock_t start_time = clock();
 
     // Push start node.
     // Copy start node so that it is not deallocated after each try.
@@ -77,7 +89,7 @@ void depth_first_search(Node* start_node, SearchResult* result) {
     // the children are pushed. This causes the nodes to be visited in a DFS order.
     while (!stack_is_empty(&nodes_to_visit)) {
         Node* current_node = pop(&nodes_to_visit);
-        insert(current_node, nodes_visited);
+        insert(current_node, nodes_visited, MAX_NODES);
         num_nodes_visited++;
 
         // Check if current node is the goal state.
@@ -88,7 +100,7 @@ void depth_first_search(Node* start_node, SearchResult* result) {
         
         // Extend current node and push children.
         // Both booleans are false as a heuristic is not used in DFS.
-        Node** child_nodes = extend_node(current_node, nodes_visited, false, false);
+        Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, false);
         
         // Push children nodes.
         for (unsigned int i = 0; i < 4; i++) {
@@ -102,21 +114,26 @@ void depth_first_search(Node* start_node, SearchResult* result) {
         // Free child nodes array to prevent a memory leak.
         free(child_nodes);
     }
+
+    // Record end time for algorithm execution.
+    clock_t end_time = clock();
+    // Calculate time taken in milliseconds.
+    double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
     
-    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited);
-    
-    // Free nodes_visted array to prevent a memory leak.
-    free(nodes_visited);
+    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }
 
 void breadth_first_search(Node* start_node, SearchResult* result) {
     Queue nodes_to_visit;
     init_queue(&nodes_to_visit);
 
-    Node** nodes_visited = malloc(MAX_NODES * 2 * sizeof(Node*));
+    Node** nodes_visited = calloc(MAX_NODES, sizeof(Node*));
     unsigned int num_nodes_visited = 0;
     
     Node* goal_node;
+
+    // Record start time for algorithm execution.
+    clock_t start_time = clock();
 
     // Enqueue start node.
     // Copy start node so that it is not deallocated after each try.
@@ -126,7 +143,7 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
     // the children are enqueued. This causes the nodes to be visited in a BFS order.
     while (!queue_is_empty(&nodes_to_visit)) {
         Node* current_node = dequeue(&nodes_to_visit);
-        insert(current_node, nodes_visited);
+        insert(current_node, nodes_visited, MAX_NODES);
         num_nodes_visited++;
 
         // Check if current node is the goal state.
@@ -137,7 +154,7 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
         
         // Extend current node and enqueue children.
         // Both booleans are false as a heuristic is not used in DFS.
-        Node** child_nodes = extend_node(current_node, nodes_visited, false, false);
+        Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, false);
 
         // Enqueue children nodes.
         for (unsigned int i = 0; i < 4; i++) {
@@ -152,21 +169,26 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
         free(child_nodes);
     }
 
-    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited);
-    
-    // Free nodes_visted array to prevent a memory leak.
-    free(nodes_visited);
+    // Record end time for algorithm execution.
+    clock_t end_time = clock();
+    // Calculate time taken in milliseconds.
+    double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
+
+    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }
 
 void uniform_cost_search(Node* start_node, SearchResult* result) {
     Queue nodes_to_visit;
     init_queue(&nodes_to_visit);
 
-    Node** nodes_visited = malloc(MAX_NODES * sizeof(Node*));
+    Node** nodes_visited = calloc(MAX_NODES, sizeof(Node*));
     unsigned int num_nodes_visited = 0;
     
     Node* goal_node;
     
+    // Record start time for algorithm execution.
+    clock_t start_time = clock();
+
     // Enqueue start node.
     priority_enqueue(&nodes_to_visit, start_node);
     
@@ -175,7 +197,7 @@ void uniform_cost_search(Node* start_node, SearchResult* result) {
     // depth come first. This causes the nodes to be visited in a UCS order.
     while (!queue_is_empty(&nodes_to_visit)) {
         Node* current_node = dequeue(&nodes_to_visit);
-        insert(current_node, nodes_visited);
+        insert(current_node, nodes_visited, MAX_NODES);
         num_nodes_visited++;
 
         // Check if current node is the goal state.
@@ -186,7 +208,7 @@ void uniform_cost_search(Node* start_node, SearchResult* result) {
         
         // Extend current node and enqueue children.
         // Both booleans are false as a heuristic is not used in UCS.
-        Node** child_nodes = extend_node(current_node, nodes_visited, false, false);
+        Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, false);
 
         // Enqueue children nodes.
         for (unsigned int i = 0; i < 4; i++) {
@@ -201,21 +223,26 @@ void uniform_cost_search(Node* start_node, SearchResult* result) {
         free(child_nodes);
     }
 
-    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited);
-    
-    // Free nodes_visted array to prevent a memory leak.
-    free(nodes_visited);
+    // Record end time for algorithm execution.
+    clock_t end_time = clock();
+    // Calculate time taken in milliseconds.
+    double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
+
+    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }
 
 void a_star_search(Node* start_node, SearchResult* result) {
     Queue nodes_to_visit;
     init_queue(&nodes_to_visit);
 
-    Node** nodes_visited = malloc(MAX_NODES * sizeof(Node*));
+    Node** nodes_visited = calloc(MAX_NODES, sizeof(Node*));
     unsigned int num_nodes_visited = 0;
     
     Node* goal_node;
     
+    // Record start time for algorithm execution.
+    clock_t start_time = clock();
+
     // Enqueue start node.
     priority_enqueue(&nodes_to_visit, start_node);
     
@@ -224,7 +251,7 @@ void a_star_search(Node* start_node, SearchResult* result) {
     // depth + heuristic value come first. This causes the nodes to be visited in a A* order.
     while (!queue_is_empty(&nodes_to_visit)) {
         Node* current_node = dequeue(&nodes_to_visit);
-        insert(current_node, nodes_visited);
+        insert(current_node, nodes_visited, MAX_NODES);
         num_nodes_visited++;
 
         // Check if current node is the goal state.
@@ -235,7 +262,7 @@ void a_star_search(Node* start_node, SearchResult* result) {
         
         // Extend current node and enqueue children.
         // Both booleans are true as a heuristic is used in A*.
-        Node** child_nodes = extend_node(current_node, nodes_visited, true, true);
+        Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, true);
 
         // Enqueue children nodes.
         for (unsigned int i = 0; i < 4; i++) {
@@ -250,8 +277,10 @@ void a_star_search(Node* start_node, SearchResult* result) {
         free(child_nodes);
     }
 
-    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited);
-    
-    // Free nodes_visted array to prevent a memory leak.
-    free(nodes_visited);
+    // Record end time for algorithm execution.
+    clock_t end_time = clock();
+    // Calculate time taken in milliseconds.
+    double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
+
+    populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }

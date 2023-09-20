@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "stack.h"
 
 // Construct stack.
@@ -6,17 +8,17 @@ void init_stack(Stack* stack) {
 }
 
 // Push node to stack.
-void push(Stack* stack, Node* node) {
+void push(Stack* stack, const Node* node) {
     // Put node at top of internal array.
-    stack->nodes[++stack->top_idx] = node;
+    stack->nodes[++stack->top_idx] = (Node*) node;
 }
 
 // Pop node from stack.
 Node* pop(Stack* stack) {
     // Remove node from top of internal array and return it.
-    Node* top_node = stack->nodes[stack->top_idx];
+    const Node* top_node = stack->nodes[stack->top_idx];
     stack->nodes[stack->top_idx--] = NULL;
-    return top_node;
+    return (Node*) top_node;
 }
 
 // Empty stack.

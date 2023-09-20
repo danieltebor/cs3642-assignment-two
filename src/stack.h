@@ -1,6 +1,7 @@
 #pragma once
 
 #include "eight_puzzle.h"
+#include "node.h"
 
 // Stack to be used in DFS.
 typedef struct {
@@ -12,7 +13,7 @@ typedef struct {
 void init_stack(Stack* stack);
 
 // Push node to stack.
-void push(Stack* stack, Node* node);
+void push(Stack* stack, const Node* node);
 
 // Pop node from stack.
 Node* pop(Stack* stack);

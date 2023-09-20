@@ -1,4 +1,10 @@
+#include <limits.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
 #include "eight_puzzle.h"
+#include "hash_table.h"
 
 // Goal state.
 const unsigned int goal_state[3][3] = {
@@ -72,7 +78,7 @@ Node* generate_random_start_node() {
 
 // Calculates a heuristic value corresponding to the number 
 // of tiles misplaced compared to the goal state
-unsigned int calc_num_tiles_misplaced(Node* node) {
+unsigned int calc_num_tiles_misplaced(const Node* node) {
     unsigned int num_tiles_misplaced = 0;
 
     // Traverse state.
@@ -87,6 +93,37 @@ unsigned int calc_num_tiles_misplaced(Node* node) {
 
     return num_tiles_misplaced;
 }
+
+const unsigned int X_CLOCKWISE_ORDER[8] = {0, 1, 2, 2, 2, 1, 0, 0};
+const unsigned int Y_CLOCKWISE_ORDER[8] = {0, 0, 0, 1, 2, 2, 2, 0};
+
+// Add Nilsson's sequence score heuristic
+unsigned int calc_nilsson_sequence_score(const Node* node) {
+    unsigned int score = 0;
+
+    // Add one to score if center not 0.
+    if (node->state[1][1] != 0) {
+        score++;
+    }
+
+    // Build state clockwise.
+    unsigned int goal_state_clockwise[8];
+    unsigned int node_state_clockwise[8];
+
+    for (unsigned int i = 0; i < 8; i++) {
+        goal_state_clockwise[i] = goal_state[Y_CLOCKWISE_ORDER[i]][X_CLOCKWISE_ORDER[i]];
+        node_state_clockwise[i] = node->state[Y_CLOCKWISE_ORDER[i]][X_CLOCKWISE_ORDER[i]];
+    }
+
+    // Check if each tile clockwise matches 
+    for (unsigned int i = 0; i < 7; i++) {
+        if (node_state_clockwise[i] != goal_state_clockwise[i]) {
+            score += 2;
+        }
+    }
+
+    return score * 3;
+} 
 
 // Calculates a heuristic value by finding the 
 // Manhatten distance of a tile from its position in the goal state.
@@ -109,7 +146,7 @@ unsigned int calc_manhatten_distance(unsigned int tile_value, unsigned int x, un
 
 // Calculates a heuristic value by calculating the sum of
 // the Manhatten distances of all tiles in the state compared to the goal.
-unsigned int calc_summed_manhatten_distances(Node* node) {
+unsigned int calc_summed_manhatten_distances(const Node* node) {
     unsigned int total_distances = 0;
 
     // Traverse state.
@@ -125,25 +162,11 @@ unsigned int calc_summed_manhatten_distances(Node* node) {
     return total_distances;
 }
 
-// Checks if two nodes are equivalent.
-bool check_states_are_equivalent(const unsigned int state1[3][3], const unsigned int state2[3][3]) {
-    // Traverse state.
-    for (unsigned int y = 0; y < 3; y++) {
-        for (unsigned int x = 0; x < 3; x++) {
-            // Check if tile is misplaced. If so return false.
-            if (state1[y][x] != state2[y][x]) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 // Trace back to root checking for any duplicate states.
-bool state_is_repeat(Node* node,
-                     Node** nodes_visited) {
+bool state_is_repeat(const Node* node,
+                     const Node** nodes_visited) {
     // Check if Node already exists in nodes_visited.
-    if (search(node, nodes_visited) == NULL) {
+    if (search(node, nodes_visited, MAX_NODES) == NULL) {
         return false;
     }
 
@@ -151,10 +174,9 @@ bool state_is_repeat(Node* node,
 }
 
 // Return all possible children of a node.
-Node** extend_node(Node* node,
-                   Node** nodes_visited,
-                   bool should_use_misplaced_heuristic,
-                   bool should_use_manhatten_distance_heuristic) {
+Node** extend_node(const Node* node,
+                   const Node** nodes_visited,
+                   bool should_use_heuristic) {
     // Find blank tile.
     unsigned int blank_x = 0, blank_y = 0;
     bool blank_tile_found = false;
@@ -219,11 +241,8 @@ Node** extend_node(Node* node,
         child_node->parent = node;
         child_node->depth = node->depth + 1;
         child_node->heuristic = 0;
-        if (should_use_misplaced_heuristic) {
-            child_node->heuristic += calc_num_tiles_misplaced(child_node);
-        }
-        if (should_use_manhatten_distance_heuristic) {
-            child_node->heuristic += calc_summed_manhatten_distances(child_node);
+        if (should_use_heuristic) {
+            child_node->heuristic += calc_nilsson_sequence_score(child_node) + calc_summed_manhatten_distances(child_node);
         }
 
         // Add child_node to child_nodes if it's state does not already exist.
