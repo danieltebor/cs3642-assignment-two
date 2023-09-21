@@ -65,3 +65,42 @@ run_search_alg_button.config(anchor='w')
 run_search_alg_button.grid(row=0, column=1, sticky='w')
 
 root.mainloop()
+
+# Algorithm tester
+tester_is_enabled = True
+num_tests = 1000
+
+def test_search_algs():
+    num_nodes_visited_rolling_avg = 0
+    trace_sizes_rolling_avg = 0
+    cpu_time_taken_ms_rolling_avg = 0
+    
+    chosen_search_alg = input('Enter search algorithm to test (A*, DFS, BFS, UCS): ')
+    
+    for i in range(1, num_tests + 1):
+        start_node = generate_random_start_node().contents
+        result = SearchResult()
+        
+        if chosen_search_alg == 'A*':
+            a_star_search(start_node, result)    
+        elif chosen_search_alg == 'DFS':
+            depth_first_search(start_node, result)
+        elif chosen_search_alg == 'BFS':
+            breadth_first_search(start_node, result)
+        elif chosen_search_alg == 'UCS':
+            uniform_cost_search(start_node, result)
+        else:
+            break
+        
+        # Update rolling average
+        num_nodes_visited_rolling_avg += (result.num_nodes_visited - num_nodes_visited_rolling_avg) / i
+        trace_sizes_rolling_avg += ((result.trace_size - 1) - trace_sizes_rolling_avg) / i
+        cpu_time_taken_ms_rolling_avg += (result.cpu_time_taken_ms - cpu_time_taken_ms_rolling_avg) / i
+
+    print(f'Results of {num_tests} tests run for {chosen_search_alg} search algorithm.')
+    print(f'Average # Nodes visited: {num_nodes_visited_rolling_avg:.1f}')
+    print(f'Average trace size: {trace_sizes_rolling_avg:.1f}')
+    print(f'Average CPU time taken (MS): {cpu_time_taken_ms_rolling_avg:.1f}')
+    
+if tester_is_enabled:
+    test_search_algs()

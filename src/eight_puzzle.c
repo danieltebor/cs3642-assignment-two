@@ -28,11 +28,12 @@ Node* generate_random_start_node() {
             }
         }
     }
+
     srand(time(NULL));
 
     // Randomly scramble the state. This garuntees the state can be solved.
     for (unsigned int i = 0; i < 10000; i++) {
-        // Generate a random move.
+        // Generate a random move 0-3.
         unsigned int move = rand() % 4;
 
         if (move == 0 && blank_x > 0) {
@@ -123,7 +124,7 @@ unsigned int calc_nilsson_sequence_score(const Node* node) {
     }
 
     return score * 3;
-} 
+}
 
 // Calculates a heuristic value by finding the 
 // Manhatten distance of a tile from its position in the goal state.
@@ -162,7 +163,7 @@ unsigned int calc_summed_manhatten_distances(const Node* node) {
     return total_distances;
 }
 
-// Trace back to root checking for any duplicate states.
+// Search nodes_visited for any duplicate states.
 bool state_is_repeat(const Node* node,
                      const Node** nodes_visited) {
     // Check if Node already exists in nodes_visited.

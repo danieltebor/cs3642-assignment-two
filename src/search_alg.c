@@ -35,6 +35,7 @@ void populate_search_result(SearchResult* result, Node** nodes_visited, const No
     if (goal_node == NULL) {
         // Free nodes_visited hash table to prevent a memory leak.
         free_nodes(nodes_visited, MAX_NODES);
+        free(nodes_visited);
         return;
     }
 
@@ -65,8 +66,9 @@ void populate_search_result(SearchResult* result, Node** nodes_visited, const No
     }
     */
 
-    // Free nodes_visited array to prevent a memory leak.
-    //free_nodes(nodes_visited, MAX_NODES);
+    // Free nodes_visited hash table to prevent a memory leak.
+    free_nodes(nodes_visited, MAX_NODES);
+    free(nodes_visited);
 }
 
 void depth_first_search(Node* start_node, SearchResult* result) {
@@ -99,7 +101,7 @@ void depth_first_search(Node* start_node, SearchResult* result) {
         }
         
         // Extend current node and push children.
-        // Both booleans are false as a heuristic is not used in DFS.
+        // 3rd parameter is false as a heuristic is not used in DFS.
         Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, false);
         
         // Push children nodes.
@@ -120,6 +122,7 @@ void depth_first_search(Node* start_node, SearchResult* result) {
     // Calculate time taken in milliseconds.
     double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
     
+    // Fill out fields in the SearchResult struct.
     populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }
 
@@ -139,7 +142,7 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
     // Copy start node so that it is not deallocated after each try.
     enqueue(&nodes_to_visit, start_node);
 
-    // Visit every node in the stack. When a node is extended in the loop,
+    // Visit every node in the queue. When a node is extended in the loop,
     // the children are enqueued. This causes the nodes to be visited in a BFS order.
     while (!queue_is_empty(&nodes_to_visit)) {
         Node* current_node = dequeue(&nodes_to_visit);
@@ -153,7 +156,7 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
         }
         
         // Extend current node and enqueue children.
-        // Both booleans are false as a heuristic is not used in DFS.
+        // 3rd parameter is false as a heuristic is not used in BFS.
         Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, false);
 
         // Enqueue children nodes.
@@ -174,6 +177,7 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
     // Calculate time taken in milliseconds.
     double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
 
+    // Fill out fields in the SearchResult struct.
     populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }
 
@@ -207,7 +211,7 @@ void uniform_cost_search(Node* start_node, SearchResult* result) {
         }
         
         // Extend current node and enqueue children.
-        // Both booleans are false as a heuristic is not used in UCS.
+        // 3rd parameter is false as a heuristic is not used in UCS.
         Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, false);
 
         // Enqueue children nodes.
@@ -228,6 +232,7 @@ void uniform_cost_search(Node* start_node, SearchResult* result) {
     // Calculate time taken in milliseconds.
     double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
 
+    // Fill out fields in the SearchResult struct.
     populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }
 
@@ -261,7 +266,7 @@ void a_star_search(Node* start_node, SearchResult* result) {
         }
         
         // Extend current node and enqueue children.
-        // Both booleans are true as a heuristic is used in A*.
+        // 3rd parameter is true as a heuristic is used in A*.
         Node** child_nodes = extend_node(current_node, (const Node**) nodes_visited, true);
 
         // Enqueue children nodes.
@@ -282,5 +287,6 @@ void a_star_search(Node* start_node, SearchResult* result) {
     // Calculate time taken in milliseconds.
     double cpu_time_taken_ms = ((double) (end_time - start_time)) / CLOCKS_PER_SEC * 1000;
 
+    // Fill out fields in the SearchResult struct.
     populate_search_result(result, nodes_visited, goal_node, num_nodes_visited, cpu_time_taken_ms);
 }
