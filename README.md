@@ -1,7 +1,7 @@
 # cs3642-assignment-two
 
-## Programming Eight Puzzle
-Eight puzzle is a puzzle in which the numbers 1-8 are randomly placed on a 3x3 grid. One of the tiles on the grid are blank. The goal of the puzzle is to rearrange the tiles to match a goal board. To achieve this, the empty tile can swap places with any horizontally or vertically adjacent tile. Search algorithms such as DFS, BFS, UCS, and A* are a means to achieve this algorithmically, which is what is showcased here.
+## Programming Eight-Puzzle
+Eight-Puzzle is a puzzle in which the numbers 1-8 are randomly placed on a 3x3 grid. One of the tiles on the grid is blank. The goal of the puzzle is to rearrange the tiles to match a goal board. To achieve this, the empty tile can swap places with any horizontally or vertically adjacent tile. Search algorithms such as DFS, BFS, UCS, and A* are a means to achieve this algorithmically, which is what is showcased here.
 
 ### Representing a State
 Each state in eight-puzzle has some important information that needs to be stored. To store this information, a wrapping node struct was created.
@@ -21,7 +21,7 @@ struct Node {
 The state of the 3x3 grid of numbers is stored in a 3x3 matrix of unsigned integers. A 1D array could have also been used, but a 3x3 matrix is easier to visualize and is barely slower. The depth field tracks how many parents the node has and is important for tracking how far down the search tree the node is. The heuristic is used for search algorithms such as A*. The parent pointer is useful for tracing the found goal state back to the root (start state).
 
 ### Random start state
-To generate a random start state, the goal state is randomly scrambled by choosing a random move 10000 times. This is done to garuntee that the generated start state can be solved. Not all start states can reach the goal state. The start state is wrapped in a node that will serve as the root in the search algorithms.
+To generate a random start state, the goal state is randomly scrambled by choosing a random move 10,000 times. This is done to guarantee that the generated start state can be solved. Not all start states can reach the goal state. The start state is wrapped in a node that will serve as the root of the search algorithms.
 
 ```c
 Node* generate_random_start_node() {
@@ -189,8 +189,8 @@ Node** extend_node(const Node* node,
 
 You may note the variable MAX_NODES. This corresponds with the possible combinations of the state. The 3x3 grid has 9 states, each with a unique number, therefore the max number of states is 9!. The hashed array is initialized to this size.
 
-### Checking if a state is repeat
-In order to check if a state has been visited yet, the child's state is searched for in a hashed array of nodes that have already been visited. This allows for a constant, or almost constant search time.
+### Checking if a state is a repeat
+In order to check if a state has been visited yet, the child's state is searched for in a hashed array of nodes that have already been visited. This allows for a constant or almost constant search time.
 
 ```c
 bool state_is_repeat(const Node* node,
@@ -268,8 +268,8 @@ void depth_first_search(Node* start_node, SearchResult* result) {
 }
 ```
 
-## Breadth First Search
-Breadth first search involves visiting every child node at each depth, incrementally. The the nodes at depth 1 are visited, then at depth 2, etc. until the goal is found or all possible nodes have been visited.
+## Breadth-First Search
+Breadth first search involves visiting every child node at each depth, incrementally. The nodes at depth 1 are visited, then at depth 2, etc. until the goal is found or all possible nodes have been visited.
 
 *Visualization
 
@@ -333,7 +333,7 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
 ```
 
 ## Uniform Cost Search
-Uniform cost search involves visiting open nodes in the order of their cost, from lowest to highest. Newly expanded nodes are sorted into this order. The only effect metric for cost in eight-puzzle is depth. This results in the UCS search order being the same as BFS. This is because all nodes of depth 1 will be visited first, then depth 2, etc.
+Uniform cost search involves visiting open nodes in the order of their cost, from lowest to highest. Newly expanded nodes are sorted into this order. The only effect metric for cost in the eight-puzzle is depth. This results in the UCS search order being the same as BFS. This is because all nodes of depth 1 will be visited first, then depth 2, etc.
 
 *Visualization
 
@@ -461,7 +461,7 @@ void a_star_search(Node* start_node, SearchResult* result) {
 ```
 
 ### Manhattan Distance Heuristic
-The Manhattan Distance hearistic measures the hamming distance between each tile in a node's state and the location it should be at in the goal state
+The Manhattan Distance heuristic measures the hamming distance between each tile in a node's state and the location it should be at in the goal state
 
 *Visualization
 
@@ -503,7 +503,7 @@ unsigned int calc_summed_manhatten_distances(const Node* node) {
 ```
 
 ### Nilsson Score Heuristic
-The Nilsson score is a useful heuristic for determining the direction the search order should go in. The score starts at 0. If the center tile is nonzero, one is added. Then the state grid is traversed in clockwise order, ignoring the center. For the current tile, if the next tile is not what it should be, add 2 to the score. At the end the score is multiplied by 3 to weight it. This heuristic is then added to the Manhattan distance heuristic.
+The Nilsson score is a useful heuristic for determining the direction the search order should go in. The score starts at 0. If the center tile is nonzero, one is added. Then the state grid is traversed in clockwise order, ignoring the center. For the current tile, if the next tile is not what it should be, add 2 to the score. At the end, the score is multiplied by 3 to increase its weight. This heuristic is then added to the Manhattan distance heuristic.
 
 ```c
 const unsigned int X_CLOCKWISE_ORDER[8] = {0, 1, 2, 2, 2, 1, 0, 0};
@@ -539,7 +539,7 @@ unsigned int calc_nilsson_sequence_score(const Node* node) {
 ```
 
 ## Running the Algorithms
-To run the algorithms a simple TKinter gui was set up. It allows for one of the 4 algorithms to be selected and then run. Then the number of visitied nodes, the cpu time, and the number of moves to the goal are shown.
+To run the algorithms a simple TKinter GUI was set up. It allows for one of the 4 algorithms to be selected and then run. Then the number of visited nodes, the CPU time, and the number of moves to the goal are shown.
 
 ```python
 root = tk.Tk()
@@ -607,7 +607,7 @@ The end result looks like this:
 *Visualization
 
 ## Testing Results
-Each algorithm was run 1000 times, and the averages of each run taken. Note that CPU time is not indicitive of how fast the algorithm ran in real time.<br>
+Each algorithm was run 1000 times, and the averages of each run were taken. Note that CPU time is not indicative of how fast the algorithm ran in real-time.<br>
 
 | Algorithm | Avg Nodes Visited | Avg CPU Time (MS) | Avg Moves To Goal |
 | --------- | ----------------- | ----------------- | ----------------- |
@@ -617,4 +617,4 @@ Each algorithm was run 1000 times, and the averages of each run taken. Note that
 | A*        | 372               | 1.0               | 26                |
 
 <br>
-From these results, it is evident that A* search is the best option if speed is very important. A* search visits a fraction of the nodes that the other algorithms do. However, the moves to the goal isn't optimal, albiet good. BFS is the best option if the best possible path needs to be found, but it is much much slower. The reason why it is so much slower than A* or DFS is that the queue uses an internal array that must be shifted to the left when a node is dequeued. This results in a much slower runtime. If the queue implementation were to be improved, the runtime would be similar to DFS. UCS search gives identical resuots to BFS as the search order is the same as BFS. Finally, the worst option is DFS. DFS searches a similar amount of ndoes compared to BFS, but the moves to goal is terrible. This is because starting from root, the child nodes are essentially random moves until the goal is found. This results in the trace going back to root following each of these random moves.
+From these results, it is evident that A* search is the best option if speed is very important. A* search visits a fraction of the nodes that the other algorithms do. However, the moves to the goal aren't optimal, albeit good. BFS is the best option if the best possible path needs to be found, but it is much much slower. The reason why it is so much slower than A* or DFS is that the queue uses an internal array that must be shifted to the left when a node is dequeued. This results in a much slower runtime. If the queue implementation were to be improved, the runtime would be similar to DFS. UCS search gives identical results to BFS as the search order is the same as BFS. Finally, the worst option is DFS. DFS searches a similar amount of nodes compared to BFS, but the number of moves to the goal is terrible. This is because starting from root, the child nodes are essentially random moves until the goal is found.
