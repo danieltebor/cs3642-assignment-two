@@ -67,7 +67,7 @@ run_search_alg_button.grid(row=0, column=1, sticky='w')
 root.mainloop()
 
 # Algorithm tester
-tester_is_enabled = True
+tester_is_enabled = False
 num_tests = 1000
 
 def test_search_algs():

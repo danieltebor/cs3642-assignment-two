@@ -1,5 +1,13 @@
 # cs3642-assignment-two
 
+## Information
+- Course: CS3642
+- Student Name: Daniel Tebor
+- Student ID: 000982064
+- Assignment #: 2
+- Due Date: 10/13
+- Signature: Daniel Tebor
+
 ## Programming Eight-Puzzle
 Eight-Puzzle is a puzzle in which the numbers 1-8 are randomly placed on a 3x3 grid. One of the tiles on the grid is blank. The goal of the puzzle is to rearrange the tiles to match a goal board. To achieve this, the empty tile can swap places with any horizontally or vertically adjacent tile. Search algorithms such as DFS, BFS, UCS, and A* are a means to achieve this algorithmically, which is what is showcased here.
 
@@ -207,7 +215,7 @@ bool state_is_repeat(const Node* node,
 ## Depth First Search
 Depth first search involves going all the way down a branch of nodes until the nodes can no longer be expanded. Once a branch has been fully expanded, the algorithm back-tracks and then expands any open nodes that have yet to be expanded along that branch. This is done until the goal is found.
 
-*Visualization
+![DFS Example](assets/dfs-example.png)
 
 To implement this functionality, a stack was used. When a node is visited, the node is popped off the stack and inserted into the hashed nodes_visited array. The children of the popped nodes are then pushed onto the stack.
 
@@ -271,7 +279,7 @@ void depth_first_search(Node* start_node, SearchResult* result) {
 ## Breadth-First Search
 Breadth first search involves visiting every child node at each depth, incrementally. The nodes at depth 1 are visited, then at depth 2, etc. until the goal is found or all possible nodes have been visited.
 
-*Visualization
+![BFS Example](assets/bfs-example.png)
 
 To implement this functionality, a queue was used. When a node is visited, it is dequeued, and its children are enqueued. This causes the search order to be depth-layer by depth-layer.
 
@@ -335,7 +343,7 @@ void breadth_first_search(Node* start_node, SearchResult* result) {
 ## Uniform Cost Search
 Uniform cost search involves visiting open nodes in the order of their cost, from lowest to highest. Newly expanded nodes are sorted into this order. The only effect metric for cost in the eight-puzzle is depth. This results in the UCS search order being the same as BFS. This is because all nodes of depth 1 will be visited first, then depth 2, etc.
 
-*Visualization
+![UCS Example](assets/ucs-example.png)
 
 The implementation is almost identical to BFS, but a priority queue is used instead of a queue. The priority queue is sorted using the depth.
 
@@ -399,7 +407,7 @@ void uniform_cost_search(Node* start_node, SearchResult* result) {
 ## A* Search
 A* search is similar to UCS, except the search order is also informed by a heuristic. The heuristic for each node is added to the depth, and the priority queue is sorted with this value.
 
-*Visualization
+![A* Example](assets/a-star-example.png)
 
 The implementation is almost identical to UCS, except the heuristic is enabled when extending nodes. This causes the heuristic to be non-zero like it is in UCS.
 
@@ -463,7 +471,7 @@ void a_star_search(Node* start_node, SearchResult* result) {
 ### Manhattan Distance Heuristic
 The Manhattan Distance heuristic measures the hamming distance between each tile in a node's state and the location it should be at in the goal state
 
-*Visualization
+![Manhatten Distance Example](assets/manhatten-heuristic-example.png)
 
 ```c
 unsigned int calc_manhatten_distance(unsigned int tile_value, unsigned int x, unsigned int y) {
@@ -604,17 +612,19 @@ root.mainloop()
 ```
 
 The end result looks like this:
-*Visualization
+
+![GUI Example](assets/gui-example.png)
 
 ## Testing Results
 Each algorithm was run 1000 times, and the averages of each run were taken. Note that CPU time is not indicative of how fast the algorithm ran in real-time.<br>
 
-| Algorithm | Avg Nodes Visited | Avg CPU Time (MS) | Avg Moves To Goal |
-| --------- | ----------------- | ----------------- | ----------------- |
-| DFS       | 22812             | 14.5              | 21854             |
-| BFS       | 33180             | 1703.6            | 13.2              |
-| UCS       | 28870             | 1390.0            | 13.5              |
-| A*        | 372               | 1.0               | 26                |
+| Algorithm | Avg # Nodes Visited   | Avg CPU Time (MS) | Avg Moves To Goal |
+| --------- | --------------------- | ----------------- | ----------------- |
+| DFS       | 22812                 | 14.5              | 21854             |
+| BFS       | 33180                 | 1703.6            | 13.2              |
+| UCS       | 28870                 | 1390.0            | 13.5              |
+| A*        | 372                   | 1.0               | 26                |
 
-<br>
-From these results, it is evident that A* search is the best option if speed is very important. A* search visits a fraction of the nodes that the other algorithms do. However, the moves to the goal aren't optimal, albeit good. BFS is the best option if the best possible path needs to be found, but it is much much slower. The reason why it is so much slower than A* or DFS is that the queue uses an internal array that must be shifted to the left when a node is dequeued. This results in a much slower runtime. If the queue implementation were to be improved, the runtime would be similar to DFS. UCS search gives identical results to BFS as the search order is the same as BFS. Finally, the worst option is DFS. DFS searches a similar amount of nodes compared to BFS, but the number of moves to the goal is terrible. This is because starting from root, the child nodes are essentially random moves until the goal is found.
+From these results, it is evident that A* search is the best option if speed is very important. A* search visits a fraction of the nodes that the other algorithms do. However, the moves to the goal aren't optimal, albeit good. BFS is the best option if the best possible path needs to be found, but it is much much slower. The reason why it is so much slower than A* or DFS is that the queue uses an internal array that must be shifted to the left when a node is dequeued. This results in a much slower runtime. If the queue implementation were to be improved, the runtime would be similar to DFS. However, this still means that BFS would be much slower than A* search. UCS search gives identical results to BFS as the search order is the same as BFS. Finally, the worst option is DFS. DFS searches a similar amount of nodes compared to BFS, but the number of moves to the goal is terrible. This is because starting from root, the child nodes are essentially random moves until the goal is eventually found through backtracking, but the backtracking typically only starts once a significant depth has been reached.
+
+## [Video Presentation]()
