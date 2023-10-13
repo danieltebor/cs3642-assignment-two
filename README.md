@@ -627,4 +627,22 @@ Each algorithm was run 1000 times, and the averages of each run were taken. Note
 
 From these results, it is evident that A* search is the best option if speed is very important. A* search visits a fraction of the nodes that the other algorithms do. However, the moves to the goal aren't optimal, albeit good. BFS is the best option if the best possible path needs to be found, but it is much much slower. The reason why it is so much slower than A* or DFS is that the queue uses an internal array that must be shifted to the left when a node is dequeued. This results in a much slower runtime. If the queue implementation were to be improved, the runtime would be similar to DFS. However, this still means that BFS would be much slower than A* search. UCS search gives identical results to BFS as the search order is the same as BFS. Finally, the worst option is DFS. DFS searches a similar amount of nodes compared to BFS, but the number of moves to the goal is terrible. This is because starting from root, the child nodes are essentially random moves until the goal is eventually found through backtracking, but the backtracking typically only starts once a significant depth has been reached.
 
-## [Video Presentation]()
+## [Video Presentation](assets/video-presentation.mp4)
+
+## Building and Running
+To build the program, run the following command in the root directory of the project.
+
+```bash
+cmake build
+```
+
+This will build the library that the python code depends on. Then run the following command to run the python code.
+
+```bash
+# Linux
+./run.sh
+# Windows
+run
+```
+
+If this has been done properly, a GUI window will open.

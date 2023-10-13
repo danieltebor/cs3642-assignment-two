@@ -1,6 +1,5 @@
 import ctypes
 
-
 # Load the backend LIBrary.
 LIB = ctypes.CDLL('./lib/libcs3642-assignment-two.so')
 
